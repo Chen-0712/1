@@ -53,13 +53,11 @@ block = gr.Blocks()
 
 with block:
     gr.Markdown(
-        """# Making Demos Leaderboard
+        """# Toolbench Leaderboard
     
-    Welcome to the leaderboard for the ever-running Making Demos Event! 🏆 
-    This is a community event where participants create demos of recently released machine learning models, or combine multiple demos to make cool apps!
-    To attend the event, simply join us in [Discord](https://huggingface.co/join/discord), take the role #collaborate and write under one of the paper posts under #making-demos forum.
-    You can add `making-demos` to tags in your Spaces' README.md's metadata section to add your demo to this leaderboard. 
-    At the end of every week, winners of this leaderboard will earn special prizes! 🎁 
+    Welcome to the leaderboard of the ToolBench! 🏆 
+    This is a community where participants create language models and action generation algorithms to generate API function calls based goals described in natural lanugage!
+    Please join our [Discord](https://discord.com/invite/JehFG5HXKb) for further discussion.
     """
     )
 
