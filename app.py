@@ -4,8 +4,8 @@ __all__ = ['block', 'make_clickable_model', 'make_clickable_user', 'get_submissi
 import gradio as gr
 import pandas as pd
 
-COLUMN_NAMES = ["model", "Open Weather", "The Cat API", "Home Search", "Trip Booking", "Google Sheets", "VirtualHome", "WebShop Long", "WebShop Short", "Tabletop"]
-BENCHMARK_RESULTS = '''[gpt4](https://platform.openai.com/docs/models/gpt-4)                    & 93.0 & 96.0 & 97.0 & 96.7 & 62.9 & 23.0 / 23.5 & 0.0 & 0.0 & 81.0 \\
+COLUMN_NAMES = ["model", "Tuned on ToolBench" "Open Weather", "The Cat API", "Home Search", "Trip Booking", "Google Sheets", "VirtualHome", "WebShop Long", "WebShop Short", "Tabletop"]
+UNTUNED_MODEL_RESULTS = '''[gpt4](https://platform.openai.com/docs/models/gpt-4)                    & 93.0 & 96.0 & 97.0 & 96.7 & 62.9 & 23.0 / 23.5 & 0.0 & 0.0 & 81.0 \\
 [text-davinci-003](https://platform.openai.com/docs/models/gpt-3)      & 99.0 & 98.0 & 97.0 & 89.2 & 62.9 & 31.0 / 25.1 & 0.0 & 0.0 & 66.7 \\
 [gpt-3.5-turbo](https://platform.openai.com/docs/models/gpt-3-5)           & 90.0 & 92.0 & 80.0 & 85.8 & 51.4 & 20.0 / 18.9 & 0.0        & 1.8        & 33.3 \\
 [text-curie-001](https://platform.openai.com/docs/models/gpt-3)          & 8.0  & 58.0 & 6.0  & 6.7  & 1.4  & 12.0 / 4.1  & 0.0        & 0.0        & 1.0  \\
@@ -33,19 +33,28 @@ BENCHMARK_RESULTS = '''[gpt4](https://platform.openai.com/docs/models/gpt-4)    
 [stablelm-base-alpha-7b](https://huggingface.co/stabilityai/stablelm-base-alpha-7b)   & 22.0 & 47.0 & 0.0  & 0.0  & 4.3  & 28.0 / 10.3 & 0.0 & 0.0  & 2.9  \\
 [stablelm-tuned-alpha-7b](https://huggingface.co/stabilityai/stablelm-tuned-alpha-7b)  & 23.0 & 38.0 & 0.0  & 0.0  & 1.4  & 26.0 / 7.3  & 0.0 & 0.0  & 3.8  \\
 [stablelm-base-alpha-3b](https://huggingface.co/stabilityai/stablelm-base-alpha-3b)   & 6.0  & 28.0 & 0.0  & 0.0  & 1.4  & 29.0 / 5.3  & 0.0 & 0.0  & 1.0  \\
-[stablelm-tuned-alpha-3b](https://huggingface.co/stabilityai/stablelm-tuned-alpha-3b)  & 14.0 & 31.0 & 0.0  & 0.8  & 0.0  & 8.0 / 5.6   & 0.0 & 0.0  & 1.0  \\
-[llama-30b-toolbench](https://huggingface.co/sambanovasystems/LLaMA-30b-toolbench)          & 100.0          & 94.0           & 87.0           & 85.8           & 2.9            & 16.0/ 24.3& 0.0            & 0.0            & 7.5        \\
+[stablelm-tuned-alpha-3b](https://huggingface.co/stabilityai/stablelm-tuned-alpha-3b)  & 14.0 & 31.0 & 0.0  & 0.8  & 0.0  & 8.0 / 5.6   & 0.0 & 0.0  & 1.0  \\'''
+TUNED_MODEL_RESULTS='''[llama-30b-toolbench](https://huggingface.co/sambanovasystems/LLaMA-30b-toolbench)          & 100.0          & 94.0           & 87.0           & 85.8           & 2.9            & 16.0/ 24.3& 0.0            & 0.0            & 7.5        \\
 [starcoder-toolbench](https://huggingface.co/sambanovasystems/starcoder-toolbench)          & 99.0       & 97.0           & 83.0           & 80.8           & 21.2        & 31.0/ 18.4& 0.0            & 0.0            & 13.9        \\
 [codegen-16B-mono-toolbench](https://huggingface.co/sambanovasystems/codegen-16B-mono-toolbench)   & 97.7          & 99.0           & 82.0           & 77.5           & 19.8     & 29.0/ 17.2& 0.0            & 3.5            & 16.2                   \\'''
 
 
 def get_baseline_df():
-    lines = BENCHMARK_RESULTS.split("\n")
     df_data = []
+    
+    lines = UNTUNED_MODEL_RESULTS.split("\n")
     for line in lines:
         model_results = line.replace(" ", "").strip("\\").split("&")
         assert len(model_results) == 10
+        model_results.insert(1, "False")
         df_data.append(model_results)
+    lines = TUNED_MODEL_RESULTS.split("\n")
+    for line in lines:
+        model_results = line.replace(" ", "").strip("\\").split("&")
+        assert len(model_results) == 10
+        model_results.insert(1, "True")
+        df_data.append(model_results)
+        
     print(len(df_data))
     df = pd.DataFrame(df_data, columns=COLUMN_NAMES)
     return df
@@ -75,7 +84,6 @@ with block:
     The [evaluation suite](https://github.com/sambanova/toolbench/) is now alive on Github.
     """
     )
-
     with gr.Row():
         with gr.Accordion("Citation", open=False):
             citation_button = gr.Textbox(
@@ -84,9 +92,15 @@ with block:
                 elem_id="citation-button",
             ).style(show_copy_button=True)
 
+    
+    gr.Markdown(
+        """In the table below, we summarize the 3-shot performance of all the models.
+        We use success rate as the primary evaluation metric for most tasks, except for the WebShop where we report rewards, as well as for VirtualHome where we use executability and Longest Common Subsequence (LCS), following the original metrics proposed by the respective authors. 
+    """
+    )
     with gr.Row():
         data = gr.components.Dataframe(
-            type="pandas", datatype=["markdown", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
+            type="pandas", datatype=["markdown", "markdown", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
         )
     with gr.Row():
         data_run = gr.Button("Refresh")
