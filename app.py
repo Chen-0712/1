@@ -3,51 +3,53 @@ __all__ = ['block', 'make_clickable_model', 'make_clickable_user', 'get_submissi
 
 import gradio as gr
 import pandas as pd
-from huggingface_hub import HfApi, repocard
-
-def is_duplicated(space_id:str)->None:
-    card = repocard.RepoCard.load(space_id, repo_type="space")
-    return getattr(card.data, "duplicated_from", None) is not None
 
 
+BENCHMARK_RESULTS = '''[gpt4](https://platform.openai.com/docs/models/gpt-4)                    & 93.0 & 96.0 & 97.0 & 96.7 & 62.9 & 23.0 / 23.5 & 0.0 & 0.0 & 81.0 \\
+[text-davinci-003](https://platform.openai.com/docs/models/gpt-3)      & 99.0 & 98.0 & 97.0 & 89.2 & 62.9 & 31.0 / 25.1 & 0.0 & 0.0 & 66.7 \\
+[gpt-3.5-turbo](https://platform.openai.com/docs/models/gpt-3-5)           & 90.0 & 92.0 & 80.0 & 85.8 & 51.4 & 20.0 / 18.9 & 0.0        & 1.8        & 33.3 \\
+[text-curie-001](https://platform.openai.com/docs/models/gpt-3)          & 8.0  & 58.0 & 6.0  & 6.7  & 1.4  & 12.0 / 4.1  & 0.0        & 0.0        & 1.0  \\
+[llama-65b](https://huggingface.co/huggyllama/llama-65b)     & 90.0 & 80.0 & 84.0 & 65.8 & 32.9 & 32.0 / 20.3 & 0.0 & 41.2 & 30.5 \\
+[llama-30b](https://huggingface.co/huggyllama/llama-30b)              & 78.0 & 84.0 & 66.0 & 45.0 & 37.1 & 27.0 / 21.7 & 0.0 & 30.6 & 34.3 \\
+[llama-13b](https://huggingface.co/huggyllama/llama-13b)                & 70.0 & 74.0 & 45.0 & 35.8 & 5.7  & 28.0 / 18.9 & 0.0 & 27.6 & 17.1 \\
+[llama-13b-alpaca](https://huggingface.co/chavinlo/gpt4-x-alpaca)    & 62.0 & 43.0 & 44.0 & 40.8 & 11.4 & 1.0 / 1.6   & 0.0 & 2.7  & 9.5  \\
+[starcoder](https://huggingface.co/bigcode/starcoder)                & 91.0 & 84.0 & 82.0 & 51.7 & 48.0 & 23.0 / 19.4 & 2.6 & 0.0  & 21.9 \\
+[starcoderbase](https://huggingface.co/bigcode/starcoderbase)           & 90.0 & 86.0 & 79.0 & 63.3 & 42.9 & 24.0 / 16.3 & 5.8 & 23.1 & 17.1 \\
+[codegen-16B-nl](https://huggingface.co/Salesforce/codegen-16B-nl)           & 51.0 & 75.0 & 37.0 & 21.7 & 7.1  & 43.0 / 18.0 & 0.0 & 0.0  & 16.2 \\
+[codegen-16B-multi](https://huggingface.co/Salesforce/codegen-16B-multi)        & 56.0 & 75.0 & 47.0 & 7.5  & 21.4 & 31.0 / 14.1 & 0.0 & 0.5  & 8.6  \\
+[codegen-16B-mono](https://huggingface.co/Salesforce/codegen-16B-mono)        & 63.7 & 72.0 & 52.0 & 28.3 & 31.5 & 28.0 / 15.7 & 1.5 & 6.6  & 15.2 \\
+[bloomz](https://huggingface.co/bigscience/bloomz)            & 58.0 & 85.0 & 36.0 & 22.5 & 14.3 & 9.0 / 4.9   & 0.0 & 1.0  & 1.0  \\
+[opt-iml-30b](https://huggingface.co/facebook/opt-iml-30b)              & 44.0 & 48.0 & 5.0  & 3.3  & 2.9  & 13.0 / 8.3  & 0.0 & 0.0  & 1.0  \\
+[opt-30b](https://huggingface.co/facebook/opt-30b)                  & 46.0 & 35.0 & 2.0  & 3.3  & 8.6  & 24.0 / 11.7 & 0.0 & 0.0  & 1.0  \\
+[opt-iml-1.3b](https://huggingface.co/facebook/opt-iml-1.3b)             & 20.0 & 28.0 & 0.0  & 0.0  & 4.3  & 13.0 / 3.1  & 0.0 & 0.0  & 1.0  \\
+[opt-1.3b](https://huggingface.co/facebook/opt-1.3b)                 & 18.0 & 30.0 & 0.0  & 0.0  & 1.4  & 31.0 / 9.7  & 0.0 & 0.0  & 1.0  \\
+[neox-20b](https://huggingface.co/EleutherAI/gpt-neox-20b)                & 55.0 & 69.0 & 27.0 & 10.8 & 18.6 & 28.0 / 15.3 & 0.0 & 8.8  & 6.7  \\
+[GPT-NeoXT-Chat-Base-20B](https://huggingface.co/togethercomputer/GPT-NeoXT-Chat-Base-20B)  & 43.0 & 73.0 & 28.0 & 10.8 & 4.3  & 26.0 / 13.1 & 0.0 & 0.7  & 7.6  \\
+[pythia-12b](https://huggingface.co/EleutherAI/pythia-12b)               & 53.0 & 65.0 & 12.0 & 0.8  & 11.4 & 17.0 / 12.1 & 0.0 & 0.0  & 1.9  \\
+[dolly-v2-12b]()            & 0.0  & 1.0  & 10.0 & 5.0  & 7.1  & 11.0 / 8.9  & 0.0 & 0.0  & 7.6  \\
+[pythia-6.9b](https://huggingface.co/EleutherAI/pythia-6.9b)   & 41.0 & 72.0 & 8.0  & 7.5  & 4.3  & 29.0 / 14.0 & 0.0 & 0.0  & 8.6  \\
+[pythia-2.8b](https://huggingface.co/EleutherAI/pythia-2.8b)   & 49.0 & 54.0 & 7.0  & 3.3  & 12.9 & 24.0 / 14.8 & 0.0 & 0.0  & 7.6  \\
+[pythia-1.4b](https://huggingface.co/EleutherAI/pythia-1.4b)   & 37.0 & 48.0 & 4.0  & 5.0  & 10.0 & 22.0 / 10.7 & 0.0 & 5.2  & 7.6  \\
+[stablelm-base-alpha-7b](https://huggingface.co/stabilityai/stablelm-base-alpha-7b)   & 22.0 & 47.0 & 0.0  & 0.0  & 4.3  & 28.0 / 10.3 & 0.0 & 0.0  & 2.9  \\
+[stablelm-tuned-alpha-7b](https://huggingface.co/stabilityai/stablelm-tuned-alpha-7b)  & 23.0 & 38.0 & 0.0  & 0.0  & 1.4  & 26.0 / 7.3  & 0.0 & 0.0  & 3.8  \\
+[stablelm-base-alpha-3b](https://huggingface.co/stabilityai/stablelm-base-alpha-3b)   & 6.0  & 28.0 & 0.0  & 0.0  & 1.4  & 29.0 / 5.3  & 0.0 & 0.0  & 1.0  \\
+[stablelm-tuned-alpha-3b](https://huggingface.co/stabilityai/stablelm-tuned-alpha-3b)  & 14.0 & 31.0 & 0.0  & 0.8  & 0.0  & 8.0 / 5.6   & 0.0 & 0.0  & 1.0  \\
+[llama-30b-toolbench](https://huggingface.co/sambanovasystems/LLaMA-30b-toolbench)          & 100.0          & 94.0           & 87.0           & 85.8           & 2.9            & 16.0/ 24.3& 0.0            & 0.0            & 7.5        \\
+[starcoder-toolbench](https://huggingface.co/sambanovasystems/starcoder-toolbench)          & 99.0       & 97.0           & 83.0           & 80.8           & 21.2        & 31.0/ 18.4& 0.0            & 0.0            & 13.9        \\
+[codegen-16B-mono-toolbench](https://huggingface.co/sambanovasystems/codegen-16B-mono-toolbench)   & 97.7          & 99.0           & 82.0           & 77.5           & 19.8     & 29.0/ 17.2& 0.0            & 3.5            & 16.2                   \\'''
 
-def make_clickable_model(model_name, link=None):
-    if link is None:
-        link = "https://huggingface.co/" + "spaces/" + model_name
-    return f'<a target="_blank" href="{link}">{model_name.split("/")[-1]}</a>'
 
-def get_space_ids():
-    api = HfApi()
-    spaces = api.list_spaces(filter="making-demos")
-    print(spaces)
-    space_ids = [x for x in spaces]
-    return space_ids
-
-
-def make_clickable_user(user_id):
-    link = "https://huggingface.co/" + user_id
-    return f'<a  target="_blank" href="{link}">{user_id}</a>'
-
-def get_submissions():
-    submissions = get_space_ids()
-    leaderboard_models = []
-
-    for submission in submissions:
-        # user, model, likes
-        if not is_duplicated(submission.id):
-            user_id = submission.id.split("/")[0]
-            leaderboard_models.append(
-                (
-                    make_clickable_user(user_id),
-                    make_clickable_model(submission.id),
-                    submission.likes,
-                )
-            )
-
-    df = pd.DataFrame(data=leaderboard_models, columns=["User", "Space", "Likes"])
-    df.sort_values(by=["Likes"], ascending=False, inplace=True)
-    df.insert(0, "Rank", list(range(1, len(df) + 1)))
+def get_baseline_df():
+    lines = BENCHMARK_RESULTS.split("\n")
+    df_data = []
+    for line in lines:
+        model_results = line.replace(" ", "").strip("\\").split("&")
+        assert len(model_results) == 10
+        df_data.append(model_results)
+    print(len(df_data))
+    df = pd.DataFrame(df_data, columns=column_names)
     return df
+
 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
 CITATION_BUTTON_TEXT = r"""@misc{xu2023tool,
@@ -84,14 +86,14 @@ with block:
 
     with gr.Row():
         data = gr.components.Dataframe(
-            type="pandas", datatype=["number", "markdown", "markdown", "number"]
+            type="pandas", datatype=["markdown", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
         )
-    with gr.Row():
         data_run = gr.Button("Refresh")
+        
         data_run.click(
-            get_submissions, outputs=data
+            get_baseline_df, outputs=data
         )
 
-    block.load(get_submissions, outputs=data)
+    block.load(get_baseline_df, outputs=data)
 
 block.launch()
