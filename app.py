@@ -39,18 +39,28 @@ TUNED_MODEL_RESULTS='''[llama-30b-toolbench](https://huggingface.co/sambanovasys
 [codegen-16B-mono-toolbench](https://huggingface.co/sambanovasystems/codegen-16B-mono-toolbench)   & 97.7          & 99.0           & 82.0           & 77.5           & 19.8     & 29.0/ 17.2& 0.0            & 3.5            & 16.2                   \\'''
 
 
+def parse_line(line):
+    model_results = line.replace(" ", "").strip("\\").split("&")
+    for i in range(1, len(model_results)):
+        if i == 6:
+            res = model_results[6].split('/')[-1].strip()
+        else:
+            res = model_results[i]
+        model_results[i] = float(res)
+    return model_results
+    
 def get_baseline_df():
     df_data = []
     
     lines = UNTUNED_MODEL_RESULTS.split("\n")
     for line in lines:
-        model_results = line.replace(" ", "").strip("\\").split("&")
+        model_results = parse_line(line)
         assert len(model_results) == 10
         model_results.insert(1, "False")
         df_data.append(model_results)
     lines = TUNED_MODEL_RESULTS.split("\n")
     for line in lines:
-        model_results = line.replace(" ", "").strip("\\").split("&")
+        model_results = parse_line(line)
         assert len(model_results) == 10
         model_results.insert(1, "True")
         df_data.append(model_results)
@@ -95,7 +105,7 @@ with block:
     
     gr.Markdown(
         """In the table below, we summarize the 3-shot performance of all the models.
-        We use success rate as the primary evaluation metric for most tasks, except for the WebShop where we report rewards, as well as for VirtualHome where we use executability and Longest Common Subsequence (LCS), following the original metrics proposed by the respective authors. 
+        We use success rate as the primary evaluation metric for most tasks, except that we report rewards on WebShop, and the Longest Common Subsequence (LCS) on VirtualHome, following the original metrics proposed by the respective authors. 
     """
     )
     with gr.Row():
