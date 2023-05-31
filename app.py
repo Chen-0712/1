@@ -49,6 +49,18 @@ def get_submissions():
     df.insert(0, "Rank", list(range(1, len(df) + 1)))
     return df
 
+CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
+CITATION_BUTTON_TEXT = r"""@misc{xu2023tool,
+      title={On the Tool Manipulation Capability of Open-source Large Language Models}, 
+      author={Qiantong Xu and Fenglu Hong and Bo Li and Changran Hu and Zhengyu Chen and Jian Zhang},
+      year={2023},
+      eprint={2305.16504},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+}"""
+
+
 block = gr.Blocks()
 
 with block:
@@ -57,9 +69,18 @@ with block:
     
     Welcome to the leaderboard of the ToolBench! 🏆 
     This is a community where participants create language models and action generation algorithms to generate API function calls based goals described in natural lanugage!
-    Please join our [Discord](https://discord.com/invite/JehFG5HXKb) for further discussion.
+    Please refer to [our paper](https://arxiv.org/abs/2305.16504) for more details and join our [Discord](https://discord.com/invite/JehFG5HXKb) for further discussion.
+    The [evaluation suite](https://github.com/sambanova/toolbench/) is now alive on Github.
     """
     )
+
+    with gr.Row():
+        with gr.Accordion("Citation", open=False):
+            citation_button = gr.Textbox(
+                value=CITATION_BUTTON_TEXT,
+                label=CITATION_BUTTON_LABEL,
+                elem_id="citation-button",
+            ).style(show_copy_button=True)
 
     with gr.Row():
         data = gr.components.Dataframe(
