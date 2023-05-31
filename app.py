@@ -88,8 +88,8 @@ with block:
         data = gr.components.Dataframe(
             type="pandas", datatype=["markdown", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
         )
+    with gr.Row():
         data_run = gr.Button("Refresh")
-        
         data_run.click(
             get_baseline_df, outputs=data
         )
