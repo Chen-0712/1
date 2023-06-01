@@ -70,7 +70,7 @@ def get_baseline_df():
         df_data.append(model_results)
         
     print(len(df_data))
-    df = pd.DataFrame(df_data, columns=COLUMN_NAMES)
+    df = pd.DataFrame(df_data, columns=COLUMN_NAMES).round(2)
     return df
 
 
