@@ -4,7 +4,7 @@ __all__ = ['block', 'make_clickable_model', 'make_clickable_user', 'get_submissi
 import gradio as gr
 import pandas as pd
 
-COLUMN_NAMES = ["model", "Tuned on ToolBench", "Open Weather", "The Cat API", "Home Search", "Trip Booking", "Google Sheets", "VirtualHome", "WebShop Long", "WebShop Short", "Tabletop"]
+COLUMN_NAMES = ["model", "Tuned on ToolBench", "Avg.", "Open Weather", "The Cat API", "Home Search", "Trip Booking", "Google Sheets", "VirtualHome", "WebShop Long", "WebShop Short", "Tabletop"]
 UNTUNED_MODEL_RESULTS = '''[gpt4](https://platform.openai.com/docs/models/gpt-4)                    & 93.0 & 96.0 & 97.0 & 96.7 & 62.9 & 23.0 / 23.5 & 0.0 & 0.0 & 81.0 \\
 [text-davinci-003](https://platform.openai.com/docs/models/gpt-3)      & 99.0 & 98.0 & 97.0 & 89.2 & 62.9 & 31.0 / 25.1 & 0.0 & 0.0 & 66.7 \\
 [gpt-3.5-turbo](https://platform.openai.com/docs/models/gpt-3-5)           & 90.0 & 92.0 & 80.0 & 85.8 & 51.4 & 20.0 / 18.9 & 0.0        & 1.8        & 33.3 \\
@@ -56,12 +56,16 @@ def get_baseline_df():
     for line in lines:
         model_results = parse_line(line)
         assert len(model_results) == 10
+        avg = sum(model_results[1:]) / 9
+        model_results.insert(1, avg)
         model_results.insert(1, "False")
         df_data.append(model_results)
     lines = TUNED_MODEL_RESULTS.split("\n")
     for line in lines:
         model_results = parse_line(line)
         assert len(model_results) == 10
+        avg = sum(model_results[1:]) / 9
+        model_results.insert(1, avg)
         model_results.insert(1, "True")
         df_data.append(model_results)
         
@@ -110,7 +114,7 @@ with block:
     )
     with gr.Row():
         data = gr.components.Dataframe(
-            type="pandas", datatype=["markdown", "markdown", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
+            type="pandas", datatype=["markdown", "markdown", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]
         )
     with gr.Row():
         data_run = gr.Button("Refresh")
