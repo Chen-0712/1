@@ -9,6 +9,9 @@ UNTUNED_MODEL_RESULTS = '''[gpt4](https://platform.openai.com/docs/models/gpt-4)
 [text-davinci-003](https://platform.openai.com/docs/models/gpt-3)      & 99.0 & 98.0 & 97.0 & 89.2 & 62.9 & 31.0 / 25.1 & 0.0 & 0.0 & 66.7 \\
 [gpt-3.5-turbo](https://platform.openai.com/docs/models/gpt-3-5)           & 90.0 & 92.0 & 80.0 & 85.8 & 51.4 & 20.0 / 18.9 & 0.0        & 1.8        & 33.3 \\
 [text-curie-001](https://platform.openai.com/docs/models/gpt-3)          & 8.0  & 58.0 & 6.0  & 6.7  & 1.4  & 12.0 / 4.1  & 0.0        & 0.0        & 1.0  \\
+[Llama-2-70b](https://huggingface.co/meta-llama/Llama-2-70b) & 90.0 & 84.39 & 83.0 & 71.67 & 58.57 & 35.0 / 24.74 & 1.53 & 30.45 & 45.4 \\
+[Llama-2-13b](https://huggingface.co/meta-llama/Llama-2-13b) & 85.0 & 77.0 & 68.0 & 53.33 & 30.0 & 33.0 / 21.67 & 0.6 & 31.67 & 23.81 \\
+[Llama-2-7b](https://huggingface.co/meta-llama/Llama-2-7b) & 76.0 & 83.0 & 58.0 & 33.33 & 22.86 & 25.0 / 21.49 & 0.0 & 6.92 & 14.39
 [llama-65b](https://huggingface.co/huggyllama/llama-65b)     & 90.0 & 80.0 & 84.0 & 65.8 & 32.9 & 32.0 / 20.3 & 0.0 & 41.2 & 30.5 \\
 [llama-30b](https://huggingface.co/huggyllama/llama-30b)              & 78.0 & 84.0 & 66.0 & 45.0 & 37.1 & 27.0 / 21.7 & 0.0 & 30.6 & 34.3 \\
 [llama-13b](https://huggingface.co/huggyllama/llama-13b)                & 70.0 & 74.0 & 45.0 & 35.8 & 5.7  & 28.0 / 18.9 & 0.0 & 27.6 & 17.1 \\
